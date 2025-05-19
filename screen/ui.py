@@ -1,6 +1,8 @@
 import tkinter as tk
 import time
 from datetime import datetime
+import os
+from tkinter import PhotoImage
 from locker_manager import LockerManager
 
 class SolaryApp(tk.Frame):
@@ -27,9 +29,24 @@ class SolaryApp(tk.Frame):
         self.notification_text = ""
         self.notification_type = "info"
         
+        # Charger l'URL du QR code
+        self.qr_code_url = self.load_qr_code_url()
+        
         self.configure(bg=self.bg_color)
         self.create_widgets()
         self.update_clock()
+        
+    def load_qr_code_url(self):
+        """Charge l'URL du QR code depuis le fichier de configuration"""
+        try:
+            if os.path.exists("assets/qrcode_url.txt"):
+                with open("assets/qrcode_url.txt", "r") as f:
+                    return f.read().strip()
+        except Exception:
+            pass
+        
+        # URL par défaut si le fichier n'existe pas
+        return "https://dashboard.vabre.ch/"
         
     def create_widgets(self):
         # En-tête avec dégradé
@@ -382,24 +399,19 @@ class SolaryApp(tk.Frame):
         qr_frame = tk.Frame(center_frame, bg="white")
         qr_frame.pack(pady=20)
         
-        # Création du QR code (simplifié pour l'exemple)
-        self.qr_code = tk.Canvas(
-            qr_frame,
-            width=200,
-            height=200,
-            bg="white",
-            highlightthickness=1,
-            highlightbackground="#e0e0e0"
-        )
-        self.qr_code.pack()
+        # Conteneur pour le QR code
+        self.qr_container = tk.Frame(qr_frame, bg="white")
+        self.qr_container.pack()
         
-        # Dessiner un QR code simplifié
-        self.draw_qr_code()
+        # Charger le QR code s'il existe
+        self.qr_image = None
+        self.qr_label = None
+        self.load_qr_code()
         
         # URL sous le QR code
         url_label = tk.Label(
             center_frame,
-            text="https://dashboard.vabre.ch/",
+            text=self.qr_code_url,
             font=("Helvetica", 12),
             bg="white",
             fg=self.primary_color
@@ -419,40 +431,82 @@ class SolaryApp(tk.Frame):
             command=lambda: self.show_view("main")
         ).pack(pady=10)
     
-    def draw_qr_code(self):
-        """Dessine un QR code simplifié pour https://dashboard.vabre.ch/"""
-        # Effacer le canvas
-        self.qr_code.delete("all")
+    def load_qr_code(self):
+        """Charge le QR code depuis le fichier"""
+        qr_path = "assets/qrcode.png"
         
-        # Dessiner un cadre
-        self.qr_code.create_rectangle(10, 10, 190, 190, fill="white", outline="black", width=2)
+        if os.path.exists(qr_path):
+            try:
+                # Supprimer l'ancien label s'il existe
+                if self.qr_label:
+                    self.qr_label.destroy()
+                
+                # Charger l'image
+                self.qr_image = PhotoImage(file=qr_path)
+                
+                # Créer un nouveau label avec l'image
+                self.qr_label = tk.Label(
+                    self.qr_container,
+                    image=self.qr_image,
+                    bg="white"
+                )
+                self.qr_label.pack()
+            except Exception as e:
+                print(f"Erreur lors du chargement du QR code: {e}")
+                self.create_fallback_qr_code()
+        else:
+            self.create_fallback_qr_code()
+    
+    def create_fallback_qr_code(self):
+        """Crée un QR code de secours si l'image n'est pas disponible"""
+        # Supprimer l'ancien label s'il existe
+        if self.qr_label:
+            self.qr_label.destroy()
         
-        # Dessiner les coins caractéristiques d'un QR code
+        # Créer un canvas pour dessiner un QR code simplifié
+        qr_canvas = tk.Canvas(
+            self.qr_container,
+            width=200,
+            height=200,
+            bg="white",
+            highlightthickness=1,
+            highlightbackground="#e0e0e0"
+        )
+        qr_canvas.pack()
+        
+        # Dessiner un QR code simplifié
+        # Cadre
+        qr_canvas.create_rectangle(10, 10, 190, 190, fill="white", outline="black", width=2)
+        
+        # Coins caractéristiques d'un QR code
         # Coin supérieur gauche
-        self.qr_code.create_rectangle(20, 20, 60, 60, fill="black", outline="")
-        self.qr_code.create_rectangle(30, 30, 50, 50, fill="white", outline="")
-        self.qr_code.create_rectangle(35, 35, 45, 45, fill="black", outline="")
+        qr_canvas.create_rectangle(20, 20, 60, 60, fill="black", outline="")
+        qr_canvas.create_rectangle(30, 30, 50, 50, fill="white", outline="")
+        qr_canvas.create_rectangle(35, 35, 45, 45, fill="black", outline="")
         
         # Coin supérieur droit
-        self.qr_code.create_rectangle(140, 20, 180, 60, fill="black", outline="")
-        self.qr_code.create_rectangle(150, 30, 170, 50, fill="white", outline="")
-        self.qr_code.create_rectangle(155, 35, 165, 45, fill="black", outline="")
+        qr_canvas.create_rectangle(140, 20, 180, 60, fill="black", outline="")
+        qr_canvas.create_rectangle(150, 30, 170, 50, fill="white", outline="")
+        qr_canvas.create_rectangle(155, 35, 165, 45, fill="black", outline="")
         
         # Coin inférieur gauche
-        self.qr_code.create_rectangle(20, 140, 60, 180, fill="black", outline="")
-        self.qr_code.create_rectangle(30, 150, 50, 170, fill="white", outline="")
-        self.qr_code.create_rectangle(35, 155, 45, 165, fill="black", outline="")
+        qr_canvas.create_rectangle(20, 140, 60, 180, fill="black", outline="")
+        qr_canvas.create_rectangle(30, 150, 50, 170, fill="white", outline="")
+        qr_canvas.create_rectangle(35, 155, 45, 165, fill="black", outline="")
         
         # Dessiner quelques carrés aléatoires pour simuler le contenu du QR code
         for i in range(20):
             x = 70 + (i % 5) * 10
             y = 70 + (i // 5) * 10
             if (i + i//5) % 3 != 0:  # Motif aléatoire
-                self.qr_code.create_rectangle(x, y, x+8, y+8, fill="black", outline="")
+                qr_canvas.create_rectangle(x, y, x+8, y+8, fill="black", outline="")
         
         # Ajouter un logo Solary au centre
-        self.qr_code.create_oval(85, 85, 115, 115, fill=self.primary_color, outline="")
-        self.qr_code.create_oval(95, 95, 105, 105, fill="white", outline="")
+        qr_canvas.create_oval(85, 85, 115, 115, fill=self.primary_color, outline="")
+        qr_canvas.create_oval(95, 95, 105, 105, fill="white", outline="")
+        
+        # Stocker le canvas comme label de secours
+        self.qr_label = qr_canvas
     
     def show_view(self, view_name):
         """Affiche la vue spécifiée et cache les autres"""

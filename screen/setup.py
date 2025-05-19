@@ -31,6 +31,8 @@ def check_and_install_dependencies():
         "tkinter": "python3-tk",  # tkinter est spécial, il s'installe différemment
         "datetime": "datetime",
         "time": None,  # Module standard, pas besoin d'installer
+        "segno": "segno",  # Pour générer le QR code
+        "PIL": "pillow",  # Pour manipuler les images
     }
     
     missing_modules = []
@@ -77,6 +79,39 @@ def check_and_install_dependencies():
     
     print("✅ Toutes les dépendances sont installées")
 
+def generate_qr_code():
+    """Génère le QR code pour l'application"""
+    print("🔄 Génération du QR code...")
+    
+    # Créer le dossier assets s'il n'existe pas
+    if not os.path.exists("assets"):
+        os.makedirs("assets")
+    
+    # URL du site (demander à l'utilisateur ou utiliser la valeur par défaut)
+    default_url = "https://dashboard.vabre.ch/"
+    url = input(f"Entrez l'URL pour le QR code (ou appuyez sur Entrée pour utiliser {default_url}): ") or default_url
+    
+    try:
+        import segno
+        
+        # Générer le QR code
+        qr = segno.make_qr(url)
+        
+        # Sauvegarder le QR code avec une taille adaptée
+        qr_path = "assets/qrcode.png"
+        qr.save(qr_path, scale=10, border=4)
+        
+        print(f"✅ QR code généré avec succès: {qr_path}")
+        
+        # Sauvegarder l'URL dans un fichier de configuration
+        with open("assets/qrcode_url.txt", "w") as f:
+            f.write(url)
+        
+        return True
+    except Exception as e:
+        print(f"❌ Erreur lors de la génération du QR code: {e}")
+        return False
+
 def run_application():
     """Lance l'application principale"""
     print("🚀 Lancement de l'application Solary...")
@@ -98,6 +133,12 @@ def main():
     
     # Vérifier et installer les dépendances
     check_and_install_dependencies()
+    
+    # Générer le QR code
+    qr_success = generate_qr_code()
+    
+    if not qr_success:
+        print("⚠️ Le QR code n'a pas pu être généré. L'application utilisera un QR code par défaut.")
     
     # Lancer l'application
     run_application()
