@@ -16,15 +16,7 @@ Solary est un système innovant de casiers connectés alimentés par énergie so
 - 🔓 Déverrouillage des casiers via code OTP
 - 📊 Interface utilisateur intuitive et moderne
 
-### 📱 Application Mobile
-- 📲 Scan de QR code pour la réservation
-- 🎫 Génération de codes OTP pour le déverrouillage
-- 📝 Historique des réservations
 
-### 🖥️ Interface Web
-- 👨‍💼 Tableau de bord administrateur
-- 📈 Statistiques d'utilisation
-- 🛠️ Configuration du système
 
 ---
 
@@ -56,8 +48,8 @@ Solary est un système innovant de casiers connectés alimentés par énergie so
 
 \`\`\`bash
 # Cloner le dépôt
-git clone https://github.com/votre-repo/solary.git
-cd solary
+git clone https://github.com/votre-repo/get_data_captor_victron.git
+cd get_data_captor_victron
 
 # Exécuter le script d'installation
 python setup.py
